@@ -1,8 +1,10 @@
 import hashlib
 import json
-
+from textwrap import dedent
 from time import time 
 from uuid import uuid4
+
+from flask import Flask
 
 
 class Blockchain(object): 
@@ -10,7 +12,7 @@ class Blockchain(object):
         self.chain = []
         self.current_transactions = []
     
-    def new_block(self):
+    def new_block(self, proof, previous_hash):
         """
         Cria um novo bloco na BlockChain
         :param proof: <int> A prova dada pela prova de trabalho do algoritimo
@@ -32,7 +34,7 @@ class Blockchain(object):
         self.chain.append(block)
         return block
     
-    def new_transaction(self):
+    def new_transaction(self, sender, recipient, amount):
         # adiciona uma nova transação para a lista de transações
         """
         Crea uma nova transação para ir para o proximo bloco buscado
@@ -82,7 +84,7 @@ class Blockchain(object):
     def hash(block):
         # da um hash em um bloco
         """
-        Cria um SHA-256 hash de um bloco
+        Cria o hash SHA-256 de um bloco
         :param block: <dict> Bloco
         :return: <str>
         """
