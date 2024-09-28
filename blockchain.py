@@ -12,7 +12,7 @@ class Blockchain(object):
         self.chain = []
         self.current_transactions = []
     
-    def new_block(self, proof, previous_hash):
+    def new_block(self, proof, previous_hash=None):
         """
         Cria um novo bloco na BlockChain
         :param proof: <int> A prova dada pela prova de trabalho do algoritimo
@@ -32,7 +32,8 @@ class Blockchain(object):
         self.current_transactions: []
         
         self.chain.append(block)
-        return block
+        
+        
     
     def new_transaction(self, sender, recipient, amount):
         # adiciona uma nova transação para a lista de transações
@@ -97,4 +98,43 @@ class Blockchain(object):
     def last_block(self):
         # retorna o ultimo bloco na corrente
         return self.chain[-1]
+    # instanciar o node
+    app = Flask(__name__)
     
+    # gera um unico endereço global **para esse** node aqui
+    node_identifier = str(uuid4()).replace('-','')
+    
+    # Instanciar o blockchain
+    blockchain = Blockchain()
+    
+    @app.route('/mine', methods=['GET'])
+    def mine():
+        # vamos rodar o algoritimo da proof of work pra poder ter a proxima prova de trabalho
+        last_block = blockchain.last_block
+        last_proof = last_block['proof']
+        proof = blockchain.proof_of_work(last_proof)
+    
+    @app.route('/transactions/new', methods=['GET'])
+    def new_transactions():
+        values = request.get._json()
+        
+        # verifica se as informações pedidas estão na informação de POST
+        required = ['sender', 'recipient', 'amount']
+        if not all(k in values for k in required):
+            return 'Missing values', 400
+        
+        #cria uma nova transação
+        index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
+        
+        response = {'message': f'Transaction will be added to Block {index}'}
+        return jsonify(response), 201       
+    @app.route('/chain/new', methods=['GET'])
+    def full_chain():
+        response = {
+            'chain': blockchain.chain,
+            'length':len(blockchain.chain),
+        }
+        return jsonify(response), 200
+    
+    if __name__ = '__main__':
+        app.run(host='0.0.0.0', port=5000)
