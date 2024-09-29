@@ -247,6 +247,40 @@ def full_chain():
         'length': len(blockchain.chain)
     }
     return jsonify(response), 200
+
+@app.route('/nodes/register', methods=['POST'])
+def register_nodes():
+    values = request.get_json()
+    
+    nodes = values.get('nodes')
+    if nodes is None:
+        return "Error: Por favor, envie uma lista válida de nodes", 400
+    
+    for node in nodes:
+        blockchain.register_node(node)
+        
+    response = {
+        'message': 'Novos nodes foram adicionados',
+        'total_nodes': list(blockchain.nodes),
+    }
+    return jsonify(response), 201
+
+@app.route('/nodes/resolve', methods=['GET'])
+def consensus():
+    replaced = blockchain.resolve_conflicts()
+    
+    if replaced:
+        response - {
+            'message': 'Nossa corrente foi trocada.'
+        }
+    else:
+        response = {
+            'message': 'Nossa corrente é a autoritaria.',
+            'chain': blockchain.chain
+        }
+        
+    return jsonify(response), 200
+    
     
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
